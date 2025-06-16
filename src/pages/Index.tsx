@@ -3,10 +3,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Shield, Users, TrendingUp, ArrowRight, MessageCircle } from "lucide-react";
+import { Heart, Shield, Users, TrendingUp, ArrowRight, MessageCircle, Calendar, Mic, Brain, Target, Trophy } from "lucide-react";
 import EmotionalCheckIn from "@/components/EmotionalCheckIn";
 import ResourcesSection from "@/components/ResourcesSection";
 import CommunitySpace from "@/components/CommunitySpace";
+import MoodTracker from "@/components/MoodTracker";
+import RealTalkPodcasts from "@/components/RealTalkPodcasts";
+import BroCademy from "@/components/BroCademy";
+import CommunityCircles from "@/components/CommunityCircles";
+import GrowthChallenges from "@/components/GrowthChallenges";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<string>("home");
@@ -15,6 +20,16 @@ const Index = () => {
     switch (activeSection) {
       case "checkin":
         return <EmotionalCheckIn />;
+      case "tracker":
+        return <MoodTracker />;
+      case "podcasts":
+        return <RealTalkPodcasts />;
+      case "brocademy":
+        return <BroCademy />;
+      case "circles":
+        return <CommunityCircles />;
+      case "challenges":
+        return <GrowthChallenges />;
       case "resources":
         return <ResourcesSection />;
       case "community":
@@ -39,24 +54,48 @@ const Index = () => {
               </div>
               <span className="text-xl font-bold text-gray-800">Unmark<span className="text-green-600">.me</span></span>
             </div>
-            <div className="flex space-x-6">
+            <div className="flex space-x-4 overflow-x-auto">
               <button 
                 onClick={() => setActiveSection("checkin")}
-                className={`px-4 py-2 rounded-lg transition-all ${activeSection === "checkin" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
+                className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "checkin" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
               >
                 Check-In
               </button>
               <button 
-                onClick={() => setActiveSection("resources")}
-                className={`px-4 py-2 rounded-lg transition-all ${activeSection === "resources" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
+                onClick={() => setActiveSection("tracker")}
+                className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "tracker" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
               >
-                Resources
+                Mood Tracker
               </button>
               <button 
-                onClick={() => setActiveSection("community")}
-                className={`px-4 py-2 rounded-lg transition-all ${activeSection === "community" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
+                onClick={() => setActiveSection("podcasts")}
+                className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "podcasts" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
               >
-                Community
+                Podcasts
+              </button>
+              <button 
+                onClick={() => setActiveSection("brocademy")}
+                className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "brocademy" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
+              >
+                BroCademy
+              </button>
+              <button 
+                onClick={() => setActiveSection("circles")}
+                className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "circles" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
+              >
+                Circles
+              </button>
+              <button 
+                onClick={() => setActiveSection("challenges")}
+                className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "challenges" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
+              >
+                Challenges
+              </button>
+              <button 
+                onClick={() => setActiveSection("resources")}
+                className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "resources" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
+              >
+                Resources
               </button>
             </div>
           </div>
@@ -96,7 +135,7 @@ const HeroSection = ({ setActiveSection }: { setActiveSection: (section: string)
             size="lg" 
             variant="outline" 
             className="border-green-300 text-green-700 hover:bg-green-50 px-8 py-3"
-            onClick={() => setActiveSection("community")}
+            onClick={() => setActiveSection("circles")}
           >
             Join Community
             <Users className="ml-2 w-5 h-5" />
@@ -104,31 +143,43 @@ const HeroSection = ({ setActiveSection }: { setActiveSection: (section: string)
         </div>
       </div>
 
-      {/* Features Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+      {/* Core Features Grid */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
         <FeatureCard
-          icon={<Heart className="w-8 h-8 text-red-500" />}
+          icon={<Calendar className="w-8 h-8 text-blue-500" />}
+          title="Mood Tracker & Journaling"
+          description="Track your emotional journey with daily check-ins and personal reflection"
+          onClick={() => setActiveSection("tracker")}
+        />
+        <FeatureCard
+          icon={<Mic className="w-8 h-8 text-purple-500" />}
+          title="Real Talk Podcasts"
+          description="Expert conversations about real issues young men face"
+          onClick={() => setActiveSection("podcasts")}
+        />
+        <FeatureCard
+          icon={<Brain className="w-8 h-8 text-green-500" />}
+          title="BroCademy Life Skills"
+          description="Learn emotional intelligence and authentic confidence building"
+          onClick={() => setActiveSection("brocademy")}
+        />
+        <FeatureCard
+          icon={<Users className="w-8 h-8 text-red-500" />}
+          title="Safe Community Circles"
+          description="Connect with others in judgment-free support groups"
+          onClick={() => setActiveSection("circles")}
+        />
+        <FeatureCard
+          icon={<Target className="w-8 h-8 text-orange-500" />}
+          title="Growth Challenges"
+          description="30-day challenges to build character and positive habits"
+          onClick={() => setActiveSection("challenges")}
+        />
+        <FeatureCard
+          icon={<Heart className="w-8 h-8 text-pink-500" />}
           title="Emotional Check-ins"
-          description="Track your feelings and emotional growth in a judgment-free space"
+          description="Quick daily mood tracking in a judgment-free space"
           onClick={() => setActiveSection("checkin")}
-        />
-        <FeatureCard
-          icon={<Shield className="w-8 h-8 text-green-500" />}
-          title="Safe Environment"
-          description="Anonymous sharing options and strict community guidelines"
-          onClick={() => setActiveSection("community")}
-        />
-        <FeatureCard
-          icon={<TrendingUp className="w-8 h-8 text-blue-500" />}
-          title="Life Skills"
-          description="Practical resources for building confidence and authentic relationships"
-          onClick={() => setActiveSection("resources")}
-        />
-        <FeatureCard
-          icon={<MessageCircle className="w-8 h-8 text-purple-500" />}
-          title="Peer Support"
-          description="Connect with others on similar journeys without toxic masculinity"
-          onClick={() => setActiveSection("community")}
         />
       </div>
 
