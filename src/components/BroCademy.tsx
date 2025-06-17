@@ -1,272 +1,370 @@
 
 import { useState } from "react";
-import { Brain, CheckCircle, Lock, Play, Trophy } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { BookOpen, CheckCircle, Clock, Trophy, User, LogOut, Play, Lock } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
+import { useToast } from "@/hooks/use-toast";
+import AuthForm from "./AuthForm";
 
 const BroCademy = () => {
-  const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
+  const { user, profile, loading: authLoading, signOut } = useUser();
+  const { toast } = useToast();
+  const [completedLessons, setCompletedLessons] = useState<number[]>([1, 2]);
 
   const courses = [
     {
       id: 1,
       title: "Emotional Intelligence Fundamentals",
-      description: "Master the basics of understanding and managing your emotions",
-      level: "Beginner",
+      description: "Learn to understand, manage, and express emotions in healthy ways",
       lessons: 8,
       duration: "2 hours",
-      progress: 75,
-      unlocked: true,
-      skills: ["Self-awareness", "Emotional regulation", "Empathy"]
+      difficulty: "Beginner",
+      category: "Core Skills",
+      progress: 25,
+      featured: true
     },
     {
       id: 2,
-      title: "Communication That Actually Works",
-      description: "Learn to express yourself clearly without drama or conflict",
-      level: "Beginner",
+      title: "Communication & Relationships",
+      description: "Build stronger connections through authentic communication",
       lessons: 6,
-      duration: "1.5 hours",
-      progress: 100,
-      unlocked: true,
-      skills: ["Active listening", "Assertiveness", "Conflict resolution"]
+      duration: "90 min",
+      difficulty: "Beginner",
+      category: "Relationships",
+      progress: 0,
+      featured: true
     },
     {
       id: 3,
-      title: "Building Authentic Confidence",
-      description: "Develop real confidence that doesn't need to put others down",
-      level: "Intermediate",
+      title: "Stress & Anxiety Management",
+      description: "Practical tools for managing stress and anxiety without shame",
       lessons: 10,
       duration: "3 hours",
-      progress: 30,
-      unlocked: true,
-      skills: ["Self-worth", "Body language", "Public speaking"]
+      difficulty: "Intermediate",
+      category: "Mental Health",
+      progress: 0,
+      featured: false
     },
     {
       id: 4,
-      title: "Healthy Relationships & Boundaries",
-      description: "Create meaningful connections while protecting your mental health",
-      level: "Intermediate",
-      lessons: 12,
-      duration: "4 hours",
-      progress: 0,
-      unlocked: true,
-      skills: ["Boundary setting", "Trust building", "Vulnerability"]
-    },
-    {
-      id: 5,
-      title: "Leadership Without Toxicity",
-      description: "Learn to lead through inspiration, not intimidation",
-      level: "Advanced",
-      lessons: 15,
-      duration: "5 hours",
-      progress: 0,
-      unlocked: false,
-      skills: ["Inclusive leadership", "Team building", "Mentoring"]
-    },
-    {
-      id: 6,
-      title: "Mental Health & Self-Care",
-      description: "Practical strategies for maintaining your mental wellness",
-      level: "Beginner",
-      lessons: 9,
+      title: "Building Authentic Confidence",
+      description: "Develop real confidence that comes from self-awareness, not bravado",
+      lessons: 7,
       duration: "2.5 hours",
-      progress: 50,
-      unlocked: true,
-      skills: ["Stress management", "Self-care", "Help-seeking"]
+      difficulty: "Intermediate",
+      category: "Personal Growth",
+      progress: 0,
+      featured: false
     }
   ];
 
-  const currentCourse = courses.find(c => c.id === selectedCourse);
+  const lessons = [
+    {
+      id: 1,
+      courseId: 1,
+      title: "What is Emotional Intelligence?",
+      duration: "15 min",
+      type: "video",
+      completed: true,
+      locked: false
+    },
+    {
+      id: 2,
+      courseId: 1,
+      title: "Identifying Your Emotions",
+      duration: "18 min",
+      type: "interactive",
+      completed: true,
+      locked: false
+    },
+    {
+      id: 3,
+      courseId: 1,
+      title: "Understanding Emotional Triggers",
+      duration: "20 min",
+      type: "video",
+      completed: false,
+      locked: false
+    },
+    {
+      id: 4,
+      courseId: 1,
+      title: "Healthy Emotional Expression",
+      duration: "22 min",
+      type: "exercise",
+      completed: false,
+      locked: true
+    }
+  ];
 
-  const getLevelColor = (level: string) => {
-    const colors = {
-      "Beginner": "bg-green-100 text-green-800",
-      "Intermediate": "bg-yellow-100 text-yellow-800",
-      "Advanced": "bg-red-100 text-red-800"
-    };
-    return colors[level as keyof typeof colors] || "bg-gray-100 text-gray-800";
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "Take care, see you soon!",
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
-  const sampleLessons = [
-    { title: "Understanding Your Emotional Triggers", duration: "12 min", completed: true },
-    { title: "The Science Behind Emotional Reactions", duration: "15 min", completed: true },
-    { title: "Practical Techniques for Self-Regulation", duration: "18 min", completed: true },
-    { title: "Building Emotional Vocabulary", duration: "10 min", completed: false },
-    { title: "Dealing with Difficult Emotions", duration: "20 min", completed: false },
-  ];
+  const handleStartLesson = (lessonId: number, lessonTitle: string) => {
+    if (lessons.find(l => l.id === lessonId)?.locked) {
+      toast({
+        title: "Complete previous lessons first",
+        description: "Unlock this lesson by completing the previous ones.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Starting lesson...",
+      description: `Now learning: ${lessonTitle}`,
+    });
+  };
+
+  const handleCompleteLesson = (lessonId: number) => {
+    setCompletedLessons(prev => [...prev, lessonId]);
+    toast({
+      title: "Lesson completed! 🎉",
+      description: "Great progress! Keep going.",
+    });
+  };
+
+  if (authLoading) {
+    return <div className="max-w-6xl mx-auto px-6 py-12 text-center">Loading...</div>;
+  }
+
+  if (!user) {
+    return <AuthForm />;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">BroCademy</h2>
+        <div className="flex items-center justify-between mb-4">
+          <div></div>
+          <h2 className="text-3xl font-bold text-gray-900">BroCademy</h2>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center text-sm text-gray-600">
+              <User className="w-4 h-4 mr-1" />
+              {profile?.username || 'User'}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSignOut}
+              className="text-gray-600 hover:text-gray-800"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
         <p className="text-lg text-gray-600">
-          Level up your emotional and life skills. Real lessons for real growth.
+          Learn essential life skills for emotional wellbeing and authentic living
         </p>
       </div>
 
-      {!selectedCourse ? (
-        <>
-          {/* Progress Overview */}
-          <Card className="mb-8 border-green-100">
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2">
+          {/* Featured Courses */}
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Featured Courses</h3>
+            <div className="space-y-6">
+              {courses.filter(c => c.featured).map((course) => (
+                <Card key={course.id} className="border-green-200 bg-gradient-to-r from-green-50 to-blue-50">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{course.title}</CardTitle>
+                        <CardDescription className="mt-2">{course.description}</CardDescription>
+                      </div>
+                      <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                        {course.category}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-4 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <BookOpen className="w-4 h-4 mr-1" />
+                          {course.lessons} lessons
+                        </div>
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-1" />
+                          {course.duration}
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {course.difficulty}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm text-gray-600 mb-2">
+                        <span>Progress</span>
+                        <span>{course.progress}%</span>
+                      </div>
+                      <Progress value={course.progress} className="h-2" />
+                    </div>
+                    <Button className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
+                      {course.progress > 0 ? 'Continue Learning' : 'Start Course'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Current Lessons */}
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Current Lessons</h3>
+            <div className="space-y-3">
+              {lessons.map((lesson) => (
+                <Card key={lesson.id} className="border-gray-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          lesson.completed ? 'bg-green-100' : lesson.locked ? 'bg-gray-100' : 'bg-blue-100'
+                        }`}>
+                          {lesson.completed ? (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          ) : lesson.locked ? (
+                            <Lock className="w-5 h-5 text-gray-400" />
+                          ) : (
+                            <Play className="w-5 h-5 text-blue-600" />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className={`font-medium ${lesson.locked ? 'text-gray-400' : 'text-gray-900'}`}>
+                            {lesson.title}
+                          </h4>
+                          <div className="flex items-center space-x-2 text-sm text-gray-500">
+                            <Clock className="w-3 h-3" />
+                            <span>{lesson.duration}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {lesson.type}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        {lesson.completed ? (
+                          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                            Completed
+                          </Badge>
+                        ) : (
+                          <Button
+                            variant={lesson.locked ? "outline" : "default"}
+                            size="sm"
+                            disabled={lesson.locked}
+                            onClick={() => handleStartLesson(lesson.id, lesson.title)}
+                          >
+                            {lesson.locked ? 'Locked' : 'Start'}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          <Card className="border-purple-100">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
-                Your Learning Journey
+                <Trophy className="w-5 h-5 mr-2 text-purple-500" />
+                Your Progress
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="space-y-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600 mb-2">4</div>
-                  <div className="text-gray-600">Courses Started</div>
+                  <div className="text-2xl font-bold text-purple-600 mb-1">
+                    {completedLessons.length}
+                  </div>
+                  <p className="text-sm text-gray-600">Lessons completed</p>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600 mb-2">1</div>
-                  <div className="text-gray-600">Completed</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600 mb-2">12</div>
-                  <div className="text-gray-600">Skills Learned</div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Courses started</span>
+                    <span className="font-semibold">1</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Learning streak</span>
+                    <span className="font-semibold">3 days</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Certificates earned</span>
+                    <span className="font-semibold">0</span>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Course Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
-              <Card 
-                key={course.id} 
-                className={`hover:shadow-lg transition-all duration-300 cursor-pointer ${
-                  !course.unlocked ? "opacity-60" : "border-green-100"
-                }`}
-                onClick={() => course.unlocked && setSelectedCourse(course.id)}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <Badge className={getLevelColor(course.level)}>
-                      {course.level}
-                    </Badge>
-                    {!course.unlocked && <Lock className="w-4 h-4 text-gray-400" />}
-                  </div>
-                  <CardTitle className="text-lg leading-snug">{course.title}</CardTitle>
-                  <CardDescription>{course.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="text-sm text-gray-600">
-                      {course.lessons} lessons • {course.duration}
-                    </div>
-                    
-                    {course.unlocked && (
-                      <div>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span>Progress</span>
-                          <span>{course.progress}%</span>
-                        </div>
-                        <Progress value={course.progress} className="h-2" />
-                      </div>
-                    )}
-                    
-                    <div className="flex flex-wrap gap-1">
-                      {course.skills.slice(0, 2).map((skill, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {skill}
-                        </Badge>
-                      ))}
-                      {course.skills.length > 2 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{course.skills.length - 2} more
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    <Button 
-                      className="w-full"
-                      disabled={!course.unlocked}
-                      variant={course.unlocked ? "default" : "outline"}
-                    >
-                      {!course.unlocked ? "Unlock" : course.progress > 0 ? "Continue" : "Start Course"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </>
-      ) : (
-        /* Course Detail View */
-        <div>
-          <Button 
-            variant="outline" 
-            onClick={() => setSelectedCourse(null)}
-            className="mb-6"
-          >
-            ← Back to Courses
-          </Button>
-          
-          <Card className="border-green-100">
+          <Card className="border-blue-100">
             <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-2xl mb-2">{currentCourse?.title}</CardTitle>
-                  <CardDescription>{currentCourse?.description}</CardDescription>
-                </div>
-                <Badge className={getLevelColor(currentCourse?.level || "")}>
-                  {currentCourse?.level}
-                </Badge>
-              </div>
+              <CardTitle>All Courses</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                  <h3 className="text-lg font-semibold mb-4">Lessons</h3>
-                  <div className="space-y-3">
-                    {sampleLessons.map((lesson, index) => (
-                      <div 
-                        key={index}
-                        className={`p-4 border rounded-lg ${
-                          lesson.completed ? "border-green-200 bg-green-50" : "border-gray-200"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            {lesson.completed ? (
-                              <CheckCircle className="w-5 h-5 text-green-600" />
-                            ) : (
-                              <Play className="w-5 h-5 text-gray-400" />
-                            )}
-                            <div>
-                              <div className="font-medium">{lesson.title}</div>
-                              <div className="text-sm text-gray-600">{lesson.duration}</div>
-                            </div>
-                          </div>
-                          <Button size="sm" variant={lesson.completed ? "outline" : "default"}>
-                            {lesson.completed ? "Review" : "Start"}
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+              <div className="space-y-3">
+                {courses.map((course) => (
+                  <div key={course.id} className="flex justify-between items-center text-sm">
+                    <span className="text-gray-700">{course.title}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {course.progress}%
+                    </Badge>
                   </div>
+                ))}
+              </div>
+              <Button variant="outline" className="w-full mt-4">
+                View All Courses
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-green-100">
+            <CardHeader>
+              <CardTitle>Learning Path</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-3">
+                Follow our recommended learning path for the best experience.
+              </p>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center text-green-600">
+                  <CheckCircle className="w-3 h-3 mr-2" />
+                  Emotional Intelligence
                 </div>
-                
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Skills You'll Learn</h3>
-                  <div className="space-y-2">
-                    {currentCourse?.skills.map((skill, index) => (
-                      <Badge key={index} variant="outline" className="mr-2 mb-2">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
+                <div className="flex items-center text-gray-400">
+                  <div className="w-3 h-3 border border-gray-300 rounded-full mr-2"></div>
+                  Communication Skills
+                </div>
+                <div className="flex items-center text-gray-400">
+                  <div className="w-3 h-3 border border-gray-300 rounded-full mr-2"></div>
+                  Stress Management
+                </div>
+                <div className="flex items-center text-gray-400">
+                  <div className="w-3 h-3 border border-gray-300 rounded-full mr-2"></div>
+                  Building Confidence
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
-      )}
+      </div>
     </div>
   );
 };

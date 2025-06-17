@@ -1,232 +1,346 @@
 
 import { useState } from "react";
-import { Users, Shield, MessageSquare, Heart, Lock } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Users, Shield, Calendar, MapPin, Clock, User, LogOut, Plus } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
+import AuthForm from "./AuthForm";
 
 const CommunityCircles = () => {
-  const [selectedCircle, setSelectedCircle] = useState<number | null>(null);
-  const [confessionText, setConfessionText] = useState("");
+  const { user, profile, loading: authLoading, signOut } = useUser();
   const { toast } = useToast();
 
   const circles = [
     {
       id: 1,
-      name: "High School Struggles",
-      description: "Navigate the chaos of high school social dynamics",
-      members: 234,
-      activeNow: 12,
-      category: "School Life",
-      isJoined: true
+      name: "College Stress Support",
+      description: "A safe space for college students dealing with academic pressure and life transitions",
+      members: 24,
+      category: "Education",
+      meetingTime: "Tuesdays 7PM EST",
+      isPrivate: true,
+      joined: false,
+      nextMeeting: "Tomorrow"
     },
     {
       id: 2,
-      name: "Family Drama Support",
-      description: "When home life gets complicated",
-      members: 189,
-      activeNow: 8,
-      category: "Family",
-      isJoined: false
+      name: "New Dads Circle",
+      description: "Support group for first-time fathers navigating parenthood challenges",
+      members: 18,
+      category: "Parenting",
+      meetingTime: "Sundays 6PM EST",
+      isPrivate: true,
+      joined: true,
+      nextMeeting: "Sunday"
     },
     {
       id: 3,
-      name: "First Relationships",
-      description: "Dating, crushes, and relationship questions",
-      members: 312,
-      activeNow: 19,
-      category: "Relationships",
-      isJoined: true
+      name: "Career Transition Bros",
+      description: "Men supporting each other through job changes and career pivots",
+      members: 31,
+      category: "Career",
+      meetingTime: "Thursdays 8PM EST",
+      isPrivate: false,
+      joined: false,
+      nextMeeting: "Thursday"
     },
     {
       id: 4,
-      name: "Mental Health Check-ins",
-      description: "Supporting each other through tough times",
-      members: 456,
-      activeNow: 24,
+      name: "Anxiety & Depression Support",
+      description: "Mental health support circle for those dealing with anxiety and depression",
+      members: 42,
       category: "Mental Health",
-      isJoined: true
+      meetingTime: "Wednesdays 7:30PM EST",
+      isPrivate: true,
+      joined: true,
+      nextMeeting: "Wednesday"
     },
     {
       id: 5,
-      name: "Social Anxiety Squad",
-      description: "For when social situations feel overwhelming",
-      members: 178,
-      activeNow: 6,
-      category: "Anxiety",
-      isJoined: false
+      name: "Relationship Recovery",
+      description: "Support for men going through breakups, divorce, or relationship challenges",
+      members: 27,
+      category: "Relationships",
+      meetingTime: "Mondays 8PM EST",
+      isPrivate: true,
+      joined: false,
+      nextMeeting: "Monday"
     }
   ];
 
-  const recentConfessions = [
-    {
-      id: 1,
-      text: "I've been pretending to be okay for months but I'm really struggling. My friends think I'm the 'strong one' but inside I feel like I'm falling apart.",
-      reactions: 23,
-      responses: 8,
-      timeAgo: "2h ago"
-    },
-    {
-      id: 2,
-      text: "Had my first panic attack today. Scared the hell out of me. Is this normal? How do you guys deal with this?",
-      reactions: 31,
-      responses: 12,
-      timeAgo: "4h ago"
-    },
-    {
-      id: 3,
-      text: "Finally told my dad I want to go to therapy. He said 'real men don't need therapy.' I'm going anyway but it hurts.",
-      reactions: 45,
-      responses: 19,
-      timeAgo: "6h ago"
-    }
-  ];
-
-  const handlePostConfession = () => {
-    if (!confessionText.trim()) {
+  const handleSignOut = async () => {
+    try {
+      await signOut();
       toast({
-        title: "Say something",
-        description: "Your voice matters - share what's on your mind.",
-        variant: "destructive"
+        title: "Signed out successfully",
+        description: "Take care, see you soon!",
       });
-      return;
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
+  };
 
+  const handleJoinCircle = (circleName: string) => {
     toast({
-      title: "Posted anonymously 💙",
-      description: "Your confession is out there. You're not alone.",
+      title: "Join request sent",
+      description: `You'll receive an email when your request to join "${circleName}" is approved.`,
     });
-
-    setConfessionText("");
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      "School Life": "bg-blue-100 text-blue-800",
-      "Family": "bg-green-100 text-green-800",
-      "Relationships": "bg-pink-100 text-pink-800",
-      "Mental Health": "bg-purple-100 text-purple-800",
-      "Anxiety": "bg-yellow-100 text-yellow-800"
-    };
-    return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800";
+  const handleLeaveCircle = (circleName: string) => {
+    toast({
+      title: "Left circle",
+      description: `You've left "${circleName}". You can rejoin anytime.`,
+    });
   };
+
+  if (authLoading) {
+    return <div className="max-w-6xl mx-auto px-6 py-12 text-center">Loading...</div>;
+  }
+
+  if (!user) {
+    return <AuthForm />;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Community Circles & Confession Wall</h2>
+        <div className="flex items-center justify-between mb-4">
+          <div></div>
+          <h2 className="text-3xl font-bold text-gray-900">Community Circles</h2>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center text-sm text-gray-600">
+              <User className="w-4 h-4 mr-1" />
+              {profile?.username || 'User'}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSignOut}
+              className="text-gray-600 hover:text-gray-800"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
         <p className="text-lg text-gray-600">
-          Safe spaces to share, connect, and support each other. What happens here, stays here.
+          Join small, supportive groups focused on specific challenges and experiences
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
-        {/* Community Circles */}
-        <div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-            <Users className="w-5 h-5 mr-2 text-green-500" />
-            Safe Circles
-          </h3>
-          
-          <div className="space-y-4">
-            {circles.map((circle) => (
-              <Card key={circle.id} className="border-green-100 hover:shadow-md transition-all">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{circle.name}</CardTitle>
-                      <CardDescription className="mt-1">{circle.description}</CardDescription>
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2">
+          {/* My Circles */}
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">My Circles</h3>
+            <div className="space-y-4">
+              {circles.filter(c => c.joined).map((circle) => (
+                <Card key={circle.id} className="border-green-200 bg-green-50">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <h4 className="text-lg font-semibold text-gray-900">{circle.name}</h4>
+                          {circle.isPrivate && (
+                            <Shield className="w-4 h-4 text-gray-500" />
+                          )}
+                        </div>
+                        <p className="text-gray-600 mb-3">{circle.description}</p>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            <Users className="w-4 h-4 mr-1" />
+                            {circle.members} members
+                          </div>
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            {circle.meetingTime}
+                          </div>
+                          <Badge variant="outline">
+                            {circle.category}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleLeaveCircle(circle.name)}
+                        className="text-red-600 border-red-600 hover:bg-red-50"
+                      >
+                        Leave
+                      </Button>
                     </div>
-                    <Badge className={getCategoryColor(circle.category)}>
-                      {circle.category}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4 text-sm text-gray-600">
-                      <span>{circle.members} members</span>
-                      <span className="flex items-center">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-                        {circle.activeNow} active now
-                      </span>
+                    <div className="flex items-center justify-between bg-white p-3 rounded-lg">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Clock className="w-4 h-4 mr-1" />
+                        Next meeting: {circle.nextMeeting}
+                      </div>
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                        Join Meeting
+                      </Button>
                     </div>
-                    <Button 
-                      size="sm"
-                      variant={circle.isJoined ? "outline" : "default"}
-                      className={circle.isJoined ? "" : "bg-gradient-to-r from-green-600 to-blue-600"}
-                    >
-                      {circle.isJoined ? "Joined" : "Join Circle"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+              {circles.filter(c => c.joined).length === 0 && (
+                <Card className="border-gray-200">
+                  <CardContent className="p-6 text-center">
+                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h4 className="text-lg font-medium text-gray-900 mb-2">No circles joined yet</h4>
+                    <p className="text-gray-600">Browse available circles below to find your community.</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+
+          {/* Available Circles */}
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Available Circles</h3>
+            <div className="space-y-4">
+              {circles.filter(c => !c.joined).map((circle) => (
+                <Card key={circle.id} className="border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <h4 className="text-lg font-semibold text-gray-900">{circle.name}</h4>
+                          {circle.isPrivate && (
+                            <Shield className="w-4 h-4 text-gray-500" />
+                          )}
+                        </div>
+                        <p className="text-gray-600 mb-3">{circle.description}</p>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600 mb-4">
+                          <div className="flex items-center">
+                            <Users className="w-4 h-4 mr-1" />
+                            {circle.members} members
+                          </div>
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            {circle.meetingTime}
+                          </div>
+                          <Badge variant="outline">
+                            {circle.category}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Next meeting: {circle.nextMeeting}
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => handleJoinCircle(circle.name)}
+                        className="ml-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                      >
+                        {circle.isPrivate ? 'Request to Join' : 'Join Circle'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Confession Wall */}
-        <div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-            <Shield className="w-5 h-5 mr-2 text-purple-500" />
-            Anonymous Confession Wall
-          </h3>
-
-          {/* Post Confession */}
-          <Card className="mb-6 border-purple-100">
+        {/* Sidebar */}
+        <div className="space-y-6">
+          <Card className="border-blue-100">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <Lock className="w-4 h-4 mr-2" />
-                Share Anonymously
+              <CardTitle className="flex items-center">
+                <Shield className="w-5 h-5 mr-2 text-blue-500" />
+                Circle Guidelines
               </CardTitle>
-              <CardDescription>
-                Sometimes you just need to get it out. Completely anonymous, completely safe.
-              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Textarea
-                  placeholder="What's weighing on your mind? No names, no judgment, just honest feelings..."
-                  value={confessionText}
-                  onChange={(e) => setConfessionText(e.target.value)}
-                  className="min-h-[100px] border-purple-200 focus:border-purple-500"
-                />
-                <Button 
-                  onClick={handlePostConfession}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                >
-                  Post Anonymously
-                </Button>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                <span>What's shared in circles stays in circles</span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                <span>Listen without judgment</span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                <span>Share authentically when comfortable</span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                <span>Support others' journeys</span>
               </div>
             </CardContent>
           </Card>
 
-          {/* Recent Confessions */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-gray-700">Recent Confessions</h4>
-            {recentConfessions.map((confession) => (
-              <Card key={confession.id} className="border-gray-200">
-                <CardContent className="pt-4">
-                  <p className="text-gray-700 mb-4 leading-relaxed">{confession.text}</p>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center space-x-4">
-                      <button className="flex items-center space-x-1 hover:text-red-500 transition-colors">
-                        <Heart className="w-4 h-4" />
-                        <span>{confession.reactions}</span>
-                      </button>
-                      <button className="flex items-center space-x-1 hover:text-blue-500 transition-colors">
-                        <MessageSquare className="w-4 h-4" />
-                        <span>{confession.responses} responses</span>
-                      </button>
-                    </div>
-                    <span>{confession.timeAgo}</span>
+          <Card className="border-purple-100">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="w-5 h-5 mr-2 text-purple-500" />
+                Community Stats
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Active circles</span>
+                  <span className="font-semibold">15</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Total members</span>
+                  <span className="font-semibold">342</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Weekly meetings</span>
+                  <span className="font-semibold">28</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-green-100">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Plus className="w-5 h-5 mr-2 text-green-500" />
+                Start a Circle
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-3">
+                Don't see a circle that fits your needs? Start your own and build a supportive community.
+              </p>
+              <Button className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
+                Create Circle
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-orange-100">
+            <CardHeader>
+              <CardTitle>Featured Members</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback className="bg-orange-100 text-orange-600">JM</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="font-medium text-sm">Jake M.</div>
+                    <div className="text-xs text-gray-500">Circle Facilitator</div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback className="bg-blue-100 text-blue-600">DR</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="font-medium text-sm">David R.</div>
+                    <div className="text-xs text-gray-500">Peer Mentor</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

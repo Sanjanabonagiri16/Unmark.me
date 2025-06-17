@@ -1,252 +1,214 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Switch } from "@/components/ui/switch";
-import { MessageCircle, Heart, Share2, Shield, Users, TrendingUp } from "lucide-react";
+import { MessageCircle, Heart, Users, Clock, Shield, User, LogOut } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
+import AuthForm from "./AuthForm";
 
 const CommunitySpace = () => {
-  const [newPost, setNewPost] = useState("");
-  const [isAnonymous, setIsAnonymous] = useState(true);
+  const { user, profile, loading: authLoading, signOut } = useUser();
   const { toast } = useToast();
 
-  const handleSubmit = () => {
-    if (!newPost.trim()) {
-      toast({
-        title: "Please write something to share",
-        description: "Your voice matters - don't be afraid to express yourself.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    toast({
-      title: "Post shared successfully! 🙌",
-      description: "Thank you for contributing to our supportive community.",
-    });
-
-    setNewPost("");
-  };
-
-  const communityPosts = [
+  // Mock community posts for demonstration
+  const [posts] = useState([
     {
       id: 1,
-      author: "Anonymous",
-      avatar: "A",
+      author: "Alex_M",
       timeAgo: "2 hours ago",
-      content: "Just wanted to say that this community has helped me realize it's okay to not be okay sometimes. I used to think I had to have everything figured out by now (I'm 19), but talking to you all has shown me that growth is a process, not a destination.",
-      likes: 23,
-      replies: 7,
-      tags: ["growth", "self-acceptance"]
+      content: "Had a tough week but finally opened up to my dad about my anxiety. It went better than expected. Sometimes the conversations we're most afraid of are the ones we need most.",
+      likes: 12,
+      replies: 3,
+      tags: ["breakthrough", "family"]
     },
     {
       id: 2,
-      author: "Mike_22",
-      avatar: "M",
+      author: "Jordan_K",
       timeAgo: "5 hours ago",
-      content: "Had my first therapy session today. Scared as hell but I did it. For anyone on the fence about it - it's not as scary as you think. My therapist didn't judge me at all when I talked about feeling lost after high school.",
-      likes: 45,
-      replies: 12,
-      tags: ["therapy", "courage", "mental-health"]
+      content: "Started therapy last month and it's been game-changing. To anyone on the fence about it - it's okay to ask for help. It's actually brave.",
+      likes: 18,
+      replies: 7,
+      tags: ["therapy", "support"]
     },
     {
       id: 3,
-      author: "Anonymous",
-      avatar: "?",
+      author: "Sam_R",
       timeAgo: "1 day ago",
-      content: "My dad still tells me to 'man up' when I try to talk about my feelings. It hurts, but I'm learning that his reaction is about his own struggles, not about me being weak. Thanks to everyone here who reminded me of that.",
-      likes: 67,
-      replies: 15,
-      tags: ["family", "toxic-masculinity", "healing"]
-    },
-    {
-      id: 4,
-      author: "Jay_Student",
-      avatar: "J",
-      timeAgo: "2 days ago",
-      content: "Update: I finally told my best friend that some of the jokes he makes actually hurt my feelings. He apologized and said he didn't realize. Sometimes people surprise you when you give them the chance. Real friends will respect your boundaries.",
-      likes: 34,
-      replies: 9,
-      tags: ["friendship", "boundaries", "communication"]
+      content: "Been working on expressing emotions instead of bottling them up. It's hard but I'm learning that vulnerability is actually strength, not weakness.",
+      likes: 25,
+      replies: 12,
+      tags: ["growth", "emotions"]
     }
-  ];
+  ]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "Take care, see you soon!",
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  if (authLoading) {
+    return <div className="max-w-6xl mx-auto px-6 py-12 text-center">Loading...</div>;
+  }
+
+  if (!user) {
+    return <AuthForm />;
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
+    <div className="max-w-6xl mx-auto px-6 py-12">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Community Space</h2>
+        <div className="flex items-center justify-between mb-4">
+          <div></div>
+          <h2 className="text-3xl font-bold text-gray-900">Community Space</h2>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center text-sm text-gray-600">
+              <User className="w-4 h-4 mr-1" />
+              {profile?.username || 'User'}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSignOut}
+              className="text-gray-600 hover:text-gray-800"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
         <p className="text-lg text-gray-600">
-          Share your journey, support others, and connect with people who get it.
+          Connect with others on similar journeys. Share, support, and grow together.
         </p>
       </div>
 
-      {/* Community Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card className="text-center border-green-100">
-          <CardContent className="pt-6">
-            <Users className="w-8 h-8 mx-auto mb-2 text-green-600" />
-            <div className="text-2xl font-bold text-green-600">892</div>
-            <div className="text-sm text-gray-600">Active members</div>
-          </CardContent>
-        </Card>
-        <Card className="text-center border-blue-100">
-          <CardContent className="pt-6">
-            <MessageCircle className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-            <div className="text-2xl font-bold text-blue-600">2.3k</div>
-            <div className="text-sm text-gray-600">Supportive messages</div>
-          </CardContent>
-        </Card>
-        <Card className="text-center border-purple-100">
-          <CardContent className="pt-6">
-            <TrendingUp className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-            <div className="text-2xl font-bold text-purple-600">94%</div>
-            <div className="text-sm text-gray-600">Feel more supported</div>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Main Feed */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="border-green-100">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <MessageCircle className="w-5 h-5 mr-2 text-green-500" />
+                Community Feed
+              </CardTitle>
+              <CardDescription>
+                Real stories, experiences, and support from the brotherhood
+              </CardDescription>
+            </CardHeader>
+          </Card>
 
-      {/* Share Your Thoughts */}
-      <Card className="mb-8 border-green-100">
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Share2 className="w-5 h-5 mr-2 text-green-600" />
-            Share Your Thoughts
-          </CardTitle>
-          <CardDescription>
-            This is a safe space. Your experiences can help others feel less alone.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea
-            placeholder="What's on your mind? Share a win, a struggle, or just how you're feeling..."
-            value={newPost}
-            onChange={(e) => setNewPost(e.target.value)}
-            className="min-h-[120px] border-green-200 focus:border-green-500"
-          />
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={isAnonymous}
-                onCheckedChange={setIsAnonymous}
-                id="anonymous"
-              />
-              <label htmlFor="anonymous" className="text-sm text-gray-600 flex items-center">
-                <Shield className="w-4 h-4 mr-1" />
-                Post anonymously
-              </label>
-            </div>
-            
-            <Button 
-              onClick={handleSubmit}
-              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-            >
-              Share Post
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Community Guidelines */}
-      <Card className="mb-8 border-yellow-100 bg-yellow-50">
-        <CardHeader>
-          <CardTitle className="flex items-center text-yellow-800">
-            <Shield className="w-5 h-5 mr-2" />
-            Community Guidelines
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="text-sm text-yellow-800 space-y-1">
-            <li>• Be respectful and supportive - we're all figuring it out together</li>
-            <li>• No toxic masculinity, homophobia, or putting others down</li>
-            <li>• Share your real experiences - authenticity helps everyone</li>
-            <li>• Report anything that makes you uncomfortable</li>
-          </ul>
-        </CardContent>
-      </Card>
-
-      {/* Community Posts */}
-      <div className="space-y-6">
-        <h3 className="text-xl font-semibold text-gray-900">Recent Posts</h3>
-        
-        {communityPosts.map((post) => (
-          <CommunityPost key={post.id} post={post} />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const CommunityPost = ({ post }: { post: any }) => {
-  const [liked, setLiked] = useState(false);
-  const [showReplies, setShowReplies] = useState(false);
-
-  return (
-    <Card className="border-green-100 hover:border-green-200 transition-colors">
-      <CardHeader className="pb-4">
-        <div className="flex items-start space-x-3">
-          <Avatar className="w-10 h-10">
-            <AvatarFallback className="bg-gradient-to-br from-green-500 to-blue-500 text-white">
-              {post.avatar}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <div className="flex items-center space-x-2">
-              <span className="font-medium text-gray-900">{post.author}</span>
-              <span className="text-sm text-gray-500">{post.timeAgo}</span>
-            </div>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <p className="text-gray-700 leading-relaxed">{post.content}</p>
-        
-        <div className="flex flex-wrap gap-2">
-          {post.tags.map((tag: string) => (
-            <Badge key={tag} variant="outline" className="text-xs border-green-200 text-green-700">
-              #{tag}
-            </Badge>
+          {posts.map((post) => (
+            <Card key={post.id} className="border-gray-200">
+              <CardContent className="pt-6">
+                <div className="flex items-start space-x-3">
+                  <Avatar>
+                    <AvatarFallback className="bg-green-100 text-green-600">
+                      {post.author.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className="font-medium text-gray-900">{post.author}</span>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Clock className="w-3 h-3 mr-1" />
+                        {post.timeAgo}
+                      </div>
+                    </div>
+                    <p className="text-gray-700 mb-3">{post.content}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex space-x-2">
+                        {post.tags.map((tag) => (
+                          <Badge key={tag} variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                        <button className="flex items-center hover:text-red-500 transition-colors">
+                          <Heart className="w-4 h-4 mr-1" />
+                          {post.likes}
+                        </button>
+                        <button className="flex items-center hover:text-blue-500 transition-colors">
+                          <MessageCircle className="w-4 h-4 mr-1" />
+                          {post.replies}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
-        
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setLiked(!liked)}
-              className={`${liked ? "text-red-600" : "text-gray-500"} hover:text-red-600`}
-            >
-              <Heart className={`w-4 h-4 mr-1 ${liked ? "fill-current" : ""}`} />
-              {post.likes + (liked ? 1 : 0)}
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowReplies(!showReplies)}
-              className="text-gray-500 hover:text-blue-600"
-            >
-              <MessageCircle className="w-4 h-4 mr-1" />
-              {post.replies} replies
-            </Button>
-          </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          <Card className="border-blue-100">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Shield className="w-5 h-5 mr-2 text-blue-500" />
+                Community Guidelines
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                <span>Be respectful and supportive</span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                <span>No judgment or toxic masculinity</span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                <span>Share authentic experiences</span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                <span>Maintain anonymity if needed</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-purple-100">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="w-5 h-5 mr-2 text-purple-500" />
+                Active Members
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600 mb-1">1,247</div>
+                <p className="text-sm text-gray-600">Members supporting each other</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-green-100">
+            <CardHeader>
+              <CardTitle>Share Your Story</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-3">
+                Ready to share your experience or ask for support?
+              </p>
+              <Button className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
+                Create Post
+              </Button>
+            </CardContent>
+          </Card>
         </div>
-        
-        {showReplies && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="text-sm text-gray-500 italic">
-              Replies coming soon! We're working on building this feature.
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
