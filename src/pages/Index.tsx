@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +11,7 @@ import RealTalkPodcasts from "@/components/RealTalkPodcasts";
 import BroCademy from "@/components/BroCademy";
 import CommunityCircles from "@/components/CommunityCircles";
 import GrowthChallenges from "@/components/GrowthChallenges";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<string>("home");
@@ -103,6 +103,9 @@ const Index = () => {
       </nav>
 
       {renderActiveSection()}
+      
+      {/* Add Footer to all pages */}
+      <Footer />
     </div>
   );
 };
