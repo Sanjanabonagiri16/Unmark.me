@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Target, Calendar, CheckCircle, User, LogOut, Play, Lock } from "lucide-react";
+import { Target, Trophy, Calendar, User, LogOut, CheckCircle, Clock, Star } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import AuthForm from "./AuthForm";
@@ -11,65 +12,99 @@ import AuthForm from "./AuthForm";
 const GrowthChallenges = () => {
   const { user, profile, loading: authLoading, signOut } = useUser();
   const { toast } = useToast();
-  const [activeChallenges, setActiveChallenges] = useState<number[]>([]);
-  const [completedDays, setCompletedDays] = useState<{[key: number]: number}>({});
-
-  const challenges = [
+  
+  const [activeChallenges, setActiveChallenges] = useState([
     {
       id: 1,
-      title: "30-Day Emotional Check-in",
-      description: "Practice daily emotional awareness by checking in with yourself every day",
-      duration: "30 days",
+      title: "Daily Gratitude Practice",
+      description: "Write down 3 things you're grateful for each day",
+      category: "Mindfulness",
+      duration: 30,
+      progress: 12,
       difficulty: "Beginner",
-      category: "Self-Awareness",
-      dailyTasks: [
-        "Rate your mood on a scale of 1-5",
-        "Write 3 sentences about how you're feeling",
-        "Identify one thing that influenced your mood today"
-      ],
-      featured: true
+      started: true
     },
     {
       id: 2,
-      title: "Gratitude & Growth",
-      description: "Build a habit of recognizing positive moments and personal growth",
-      duration: "21 days",
+      title: "Emotional Check-in Challenge",
+      description: "Take 5 minutes daily to identify and name your emotions",
+      category: "Emotional Intelligence",
+      duration: 21,
+      progress: 8,
       difficulty: "Beginner",
-      category: "Mindfulness",
-      dailyTasks: [
-        "Write down 3 things you're grateful for",
-        "Identify one way you grew today",
-        "Share appreciation with someone in your life"
-      ],
-      featured: true
-    },
+      started: true
+    }
+  ]);
+
+  const availableChallenges = [
     {
       id: 3,
-      title: "Communication Courage",
-      description: "Practice expressing yourself authentically in conversations",
-      duration: "14 days",
+      title: "30-Day Vulnerability Practice",
+      description: "Share one authentic feeling or experience with someone you trust each day",
+      category: "Personal Growth",
+      duration: 30,
       difficulty: "Intermediate",
-      category: "Communication",
-      dailyTasks: [
-        "Have one meaningful conversation",
-        "Express a genuine feeling to someone",
-        "Practice active listening for 10 minutes"
-      ],
-      featured: false
+      participants: 234,
+      rating: 4.8
     },
     {
       id: 4,
-      title: "Stress Mastery",
-      description: "Learn and practice healthy stress management techniques",
-      duration: "28 days",
+      title: "Stress-Free Communication",
+      description: "Practice active listening and non-violent communication for 3 weeks",
+      category: "Communication",
+      duration: 21,
       difficulty: "Intermediate",
-      category: "Wellness",
-      dailyTasks: [
-        "Practice 5 minutes of deep breathing",
-        "Do one stress-relieving activity",
-        "Reflect on what triggered stress today"
-      ],
-      featured: false
+      participants: 189,
+      rating: 4.6
+    },
+    {
+      id: 5,
+      title: "Digital Detox & Mindfulness",
+      description: "Limit social media and practice 10 minutes of daily meditation",
+      category: "Mental Health",
+      duration: 14,
+      difficulty: "Beginner",
+      participants: 312,
+      rating: 4.7
+    },
+    {
+      id: 6,
+      title: "Build Meaningful Connections",
+      description: "Reach out to one person daily - check in, offer support, or share something real",
+      category: "Relationships",
+      duration: 30,
+      difficulty: "Intermediate",
+      participants: 156,
+      rating: 4.9
+    },
+    {
+      id: 7,
+      title: "Anger Management Toolkit",
+      description: "Learn and practice healthy anger expression techniques daily",
+      category: "Emotional Intelligence",
+      duration: 28,
+      difficulty: "Advanced",
+      participants: 98,
+      rating: 4.5
+    },
+    {
+      id: 8,
+      title: "Self-Compassion Journey",
+      description: "Replace self-criticism with self-kindness through daily exercises",
+      category: "Personal Growth",
+      duration: 21,
+      difficulty: "Beginner",
+      participants: 267,
+      rating: 4.8
+    }
+  ];
+
+  const completedChallenges = [
+    {
+      title: "Morning Affirmations",
+      completedDate: "2024-01-10",
+      category: "Self-Confidence",
+      duration: 14
     }
   ];
 
@@ -85,31 +120,26 @@ const GrowthChallenges = () => {
     }
   };
 
-  const handleStartChallenge = (challengeId: number, challengeTitle: string) => {
-    setActiveChallenges(prev => [...prev, challengeId]);
-    setCompletedDays(prev => ({ ...prev, [challengeId]: 0 }));
+  const handleStartChallenge = (challengeTitle: string) => {
     toast({
-      title: "Challenge started! 🚀",
-      description: `You've joined "${challengeTitle}". Let's build some positive habits!`,
+      title: "Challenge started! 🎯",
+      description: `You've joined "${challengeTitle}". Good luck!`,
     });
   };
 
-  const handleCompleteDay = (challengeId: number) => {
-    setCompletedDays(prev => ({
-      ...prev,
-      [challengeId]: (prev[challengeId] || 0) + 1
-    }));
+  const handleCompleteDay = (challengeId: number, challengeTitle: string) => {
+    setActiveChallenges(prev => 
+      prev.map(challenge => 
+        challenge.id === challengeId 
+          ? { ...challenge, progress: challenge.progress + 1 }
+          : challenge
+      )
+    );
+    
     toast({
-      title: "Day completed! 🎉",
-      description: "Great progress! Keep the momentum going.",
+      title: "Day completed! 🌟",
+      description: `Great job on "${challengeTitle}"!`,
     });
-  };
-
-  const getChallengeProgress = (challengeId: number) => {
-    const challenge = challenges.find(c => c.id === challengeId);
-    const completed = completedDays[challengeId] || 0;
-    const total = parseInt(challenge?.duration.split(' ')[0] || '30');
-    return (completed / total) * 100;
   };
 
   if (authLoading) {
@@ -142,225 +172,216 @@ const GrowthChallenges = () => {
           </div>
         </div>
         <p className="text-lg text-gray-600">
-          30-day challenges to build character, resilience, and positive habits
+          30-day challenges to build positive habits and emotional resilience
         </p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Main Content */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-8">
           {/* Active Challenges */}
-          {activeChallenges.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Your Active Challenges</h3>
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Your Active Challenges</h3>
+            {activeChallenges.length > 0 ? (
               <div className="space-y-4">
-                {challenges.filter(c => activeChallenges.includes(c.id)).map((challenge) => (
+                {activeChallenges.map((challenge) => (
                   <Card key={challenge.id} className="border-green-200 bg-green-50">
                     <CardContent className="p-6">
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <h4 className="text-lg font-semibold text-gray-900 mb-2">{challenge.title}</h4>
                           <p className="text-gray-600 mb-3">{challenge.description}</p>
-                          <div className="flex items-center space-x-2 mb-4">
+                          <div className="flex items-center space-x-4 text-sm text-gray-600">
+                            <Badge variant="outline">{challenge.category}</Badge>
+                            <div className="flex items-center">
+                              <Calendar className="w-4 h-4 mr-1" />
+                              {challenge.duration} days
+                            </div>
                             <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-                              {challenge.category}
+                              {challenge.difficulty}
                             </Badge>
-                            <Badge variant="outline">{challenge.difficulty}</Badge>
                           </div>
                         </div>
+                        <Button
+                          onClick={() => handleCompleteDay(challenge.id, challenge.title)}
+                          disabled={challenge.progress >= challenge.duration}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          {challenge.progress >= challenge.duration ? 'Completed!' : 'Mark Today Done'}
+                        </Button>
                       </div>
-                      
-                      <div className="mb-4">
-                        <div className="flex justify-between text-sm text-gray-600 mb-2">
-                          <span>Progress</span>
-                          <span>Day {completedDays[challenge.id] || 0} of {challenge.duration.split(' ')[0]}</span>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Progress: Day {challenge.progress} of {challenge.duration}</span>
+                          <span>{Math.round((challenge.progress / challenge.duration) * 100)}%</span>
                         </div>
-                        <Progress value={getChallengeProgress(challenge.id)} className="h-2" />
+                        <Progress value={(challenge.progress / challenge.duration) * 100} className="h-3" />
                       </div>
-
-                      <div className="mb-4">
-                        <h5 className="font-medium text-gray-900 mb-2">Today's Tasks:</h5>
-                        <ul className="space-y-1">
-                          {challenge.dailyTasks.map((task, index) => (
-                            <li key={index} className="flex items-center text-sm text-gray-600">
-                              <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                              {task}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <Button
-                        onClick={() => handleCompleteDay(challenge.id)}
-                        className="w-full bg-green-600 hover:bg-green-700"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Complete Today's Challenge
-                      </Button>
                     </CardContent>
                   </Card>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <Card className="border-gray-200">
+                <CardContent className="p-6 text-center">
+                  <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">No active challenges</h4>
+                  <p className="text-gray-600">Start a challenge below to begin your growth journey.</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Available Challenges */}
           <div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              {activeChallenges.length > 0 ? 'More Challenges' : 'Featured Challenges'}
-            </h3>
-            <div className="space-y-6">
-              {challenges.filter(c => c.featured && !activeChallenges.includes(c.id)).map((challenge) => (
-                <Card key={challenge.id} className="border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{challenge.title}</CardTitle>
-                        <CardDescription className="mt-2">{challenge.description}</CardDescription>
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Available Challenges</h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              {availableChallenges.map((challenge) => (
+                <Card key={challenge.id} className="border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="mb-4">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-2">{challenge.title}</h4>
+                      <p className="text-gray-600 mb-3">{challenge.description}</p>
+                      <div className="flex items-center justify-between mb-3">
+                        <Badge variant="outline">{challenge.category}</Badge>
+                        <div className="flex items-center text-yellow-500">
+                          <Star className="w-4 h-4 mr-1 fill-current" />
+                          <span className="text-sm font-medium">{challenge.rating}</span>
+                        </div>
                       </div>
-                      <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">
-                        {challenge.category}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center space-x-4 mb-4 text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        {challenge.duration}
+                      <div className="flex items-center space-x-4 text-sm text-gray-600 mb-4">
+                        <div className="flex items-center">
+                          <Calendar className="w-4 h-4 mr-1" />
+                          {challenge.duration} days
+                        </div>
+                        <div className="flex items-center">
+                          <Target className="w-4 h-4 mr-1" />
+                          {challenge.participants} participants
+                        </div>
                       </div>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge 
+                        className={`${
+                          challenge.difficulty === 'Beginner' ? 'bg-green-100 text-green-700' :
+                          challenge.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        } hover:bg-opacity-80`}
+                      >
                         {challenge.difficulty}
                       </Badge>
                     </div>
-                    
-                    <div className="mb-4">
-                      <h5 className="font-medium text-gray-900 mb-2">Daily Activities:</h5>
-                      <ul className="space-y-1">
-                        {challenge.dailyTasks.map((task, index) => (
-                          <li key={index} className="flex items-center text-sm text-gray-600">
-                            <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
-                            {task}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <Button
-                      onClick={() => handleStartChallenge(challenge.id, challenge.title)}
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    <Button 
+                      onClick={() => handleStartChallenge(challenge.title)}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                     >
-                      <Play className="w-4 h-4 mr-2" />
                       Start Challenge
                     </Button>
                   </CardContent>
                 </Card>
               ))}
             </div>
-
-            {/* Other Challenges */}
-            <div className="mt-8">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">More Challenges</h4>
-              <div className="grid gap-4">
-                {challenges.filter(c => !c.featured && !activeChallenges.includes(c.id)).map((challenge) => (
-                  <Card key={challenge.id} className="border-gray-200">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h5 className="font-medium text-gray-900 mb-1">{challenge.title}</h5>
-                          <p className="text-sm text-gray-600 mb-2">{challenge.description}</p>
-                          <div className="flex items-center space-x-2">
-                            <Badge variant="outline" className="text-xs">{challenge.category}</Badge>
-                            <Badge variant="outline" className="text-xs">{challenge.duration}</Badge>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleStartChallenge(challenge.id, challenge.title)}
-                        >
-                          Start
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card className="border-orange-100">
+          {/* Challenge Stats */}
+          <Card className="border-purple-200">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Trophy className="w-5 h-5 mr-2 text-orange-500" />
+                <Trophy className="w-5 h-5 mr-2 text-purple-500" />
                 Your Stats
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Active challenges</span>
-                  <span className="font-semibold">{activeChallenges.length}</span>
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600 mb-1">
+                    {activeChallenges.length}
+                  </div>
+                  <p className="text-sm text-gray-600">Active challenges</p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Days completed</span>
-                  <span className="font-semibold">
-                    {Object.values(completedDays).reduce((sum, days) => sum + days, 0)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Current streak</span>
-                  <span className="font-semibold">0 days</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Challenges completed</span>
-                  <span className="font-semibold">0</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Challenges completed</span>
+                    <span className="font-semibold">{completedChallenges.length}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Total days practiced</span>
+                    <span className="font-semibold">
+                      {activeChallenges.reduce((sum, challenge) => sum + challenge.progress, 0) + 14}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Current streak</span>
+                    <span className="font-semibold">5 days</span>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-blue-100">
+          {/* Completed Challenges */}
+          <Card className="border-green-200">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Target className="w-5 h-5 mr-2 text-blue-500" />
-                Challenge Tips
+                <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
+                Completed
               </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {completedChallenges.length > 0 ? (
+                <div className="space-y-3">
+                  {completedChallenges.map((challenge, index) => (
+                    <div key={index} className="p-3 bg-green-50 rounded-lg">
+                      <h4 className="font-medium text-green-800 mb-1">{challenge.title}</h4>
+                      <div className="flex justify-between text-sm text-green-600">
+                        <span>{challenge.category}</span>
+                        <span>{challenge.completedDate}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600">Complete your first challenge to see it here!</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Challenge Tips */}
+          <Card className="border-blue-200">
+            <CardHeader>
+              <CardTitle>Challenge Tips</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-start space-x-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                <span>Start with one challenge at a time</span>
+                <span>Start with easier challenges to build momentum</span>
               </div>
               <div className="flex items-start space-x-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                <span>Set a daily reminder to complete tasks</span>
+                <span>Set daily reminders to complete your practice</span>
               </div>
               <div className="flex items-start space-x-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                <span>Track your progress in a journal</span>
+                <span>Share your progress with friends for accountability</span>
               </div>
               <div className="flex items-start space-x-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                <span>Celebrate small wins along the way</span>
+                <span>Don't worry about perfect - consistency matters most</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-green-100">
+          {/* Motivation */}
+          <Card className="border-orange-200">
             <CardHeader>
-              <CardTitle>Custom Challenge</CardTitle>
+              <CardTitle>Daily Motivation</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-3">
-                Want to create your own personal growth challenge?
-              </p>
-              <Button className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
-                Create Challenge
-              </Button>
+              <blockquote className="text-sm italic text-gray-700 mb-2">
+                "The journey of a thousand miles begins with one step. Every small action towards growth matters."
+              </blockquote>
+              <p className="text-xs text-gray-500">- Ancient Wisdom</p>
             </CardContent>
           </Card>
         </div>
