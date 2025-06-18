@@ -1,7 +1,9 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Heart, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Shield, Users, Heart, AlertTriangle, CheckCircle, XCircle, Home } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const CommunityGuidelines = () => {
   const coreValues = [
@@ -76,12 +78,20 @@ const CommunityGuidelines = () => {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Community Guidelines</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Creating a safe, supportive space for authentic connections and emotional growth
-        </p>
+    <div className="max-w-6xl mx-auto px-6 py-12 animate-fade-in">
+      <div className="flex items-center justify-between mb-12">
+        <div className="text-center flex-1">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Community Guidelines</h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Creating a safe, supportive space for authentic connections and emotional growth
+          </p>
+        </div>
+        <Link to="/" className="hover-scale">
+          <Button variant="outline" className="flex items-center">
+            <Home className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+        </Link>
       </div>
 
       {/* Core Values */}

@@ -2,7 +2,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Phone, MessageCircle, AlertTriangle, Heart, Clock, ExternalLink } from "lucide-react";
+import { Phone, MessageCircle, AlertTriangle, Heart, Clock, ExternalLink, Home } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const CrisisSupport = () => {
   const immediateHelp = [
@@ -52,12 +53,20 @@ const CrisisSupport = () => {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Crisis Support</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Immediate help and resources for mental health emergencies
-        </p>
+    <div className="max-w-6xl mx-auto px-6 py-12 animate-fade-in">
+      <div className="flex items-center justify-between mb-12">
+        <div className="text-center flex-1">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Crisis Support</h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Immediate help and resources for mental health emergencies
+          </p>
+        </div>
+        <Link to="/" className="hover-scale">
+          <Button variant="outline" className="flex items-center">
+            <Home className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+        </Link>
       </div>
 
       {/* Immediate Crisis Alert */}

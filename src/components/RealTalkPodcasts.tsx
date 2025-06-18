@@ -1,370 +1,302 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Play, Pause, Clock, User, LogOut, Heart, Download, Share } from "lucide-react";
-import { useUser } from "@/contexts/UserContext";
-import { useToast } from "@/hooks/use-toast";
-import AuthForm from "./AuthForm";
+import { Play, Pause, Clock, Star, Heart, Home, Mic, Users, TrendingUp } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const RealTalkPodcasts = () => {
-  const { user, profile, loading: authLoading, signOut } = useUser();
-  const { toast } = useToast();
-  const [playingEpisode, setPlayingEpisode] = useState<number | null>(null);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
 
-  const podcasts = [
+  const featuredPodcasts = [
     {
-      id: 1,
-      title: "Breaking the Silence: Men and Mental Health",
+      id: "1",
+      title: "Breaking the Mask: Men's Mental Health in 2025",
       host: "Dr. Marcus Johnson",
       duration: "45 min",
-      description: "A deep dive into why men struggle to seek help and how to break the stigma",
+      description: "A deep dive into the pressures young men face and how to build authentic emotional connections.",
       category: "Mental Health",
-      listens: "12.5K",
-      featured: true,
-      topics: ["Depression", "Anxiety", "Stigma", "Help-seeking"]
+      rating: 4.9,
+      plays: "12.5K",
+      featured: true
     },
     {
-      id: 2,
-      title: "From Anger to Understanding: Managing Emotions",
-      host: "James Mitchell",
+      id: "2",
+      title: "The Vulnerability Advantage",
+      host: "Alex Rivera & Jake Thompson",
       duration: "38 min",
-      description: "Learning healthy ways to process and express anger without harming relationships",
-      category: "Emotional Intelligence",
-      listens: "9.8K",
-      featured: true,
-      topics: ["Anger", "Relationships", "Communication"]
-    },
-    {
-      id: 3,
-      title: "The Father I Never Had: Growing Up Without a Role Model",
-      host: "Carlos Rivera",
-      duration: "52 min",
-      description: "Personal stories and insights on navigating manhood without a father figure",
-      category: "Family & Relationships",
-      listens: "15.2K",
-      featured: false,
-      topics: ["Fatherhood", "Identity", "Growth"]
-    },
-    {
-      id: 4,
-      title: "Vulnerability is Strength: Redefining Masculinity",
-      host: "Dr. Sarah Williams & Mike Thompson",
-      duration: "41 min",
-      description: "Challenging toxic masculinity and embracing emotional authenticity",
+      description: "Two guys share their journey from emotional isolation to building meaningful relationships.",
       category: "Personal Growth",
-      listens: "11.3K",
-      featured: false,
-      topics: ["Masculinity", "Vulnerability", "Authenticity"]
+      rating: 4.8,
+      plays: "8.7K",
+      featured: true
     },
     {
-      id: 5,
-      title: "Suicide Prevention: Warning Signs and How to Help",
-      host: "Dr. Lisa Chen",
-      duration: "35 min",
-      description: "Critical information about recognizing signs and supporting someone in crisis",
-      category: "Crisis Support",
-      listens: "8.7K",
-      featured: false,
-      topics: ["Suicide Prevention", "Crisis", "Support"]
-    },
+      id: "3",
+      title: "Redefining Strength: Beyond Physical Power",
+      host: "Coach Michael Chen",
+      duration: "52 min",
+      description: "Exploring emotional strength, resilience, and what it really means to be strong in today's world.",
+      category: "Self-Development",
+      rating: 4.9,
+      plays: "15.2K",
+      featured: true
+    }
+  ];
+
+  const recentEpisodes = [
     {
-      id: 6,
-      title: "Building Healthy Relationships: Communication and Trust",
-      host: "Relationship Expert Tom Bradley",
-      duration: "44 min",
-      description: "Essential skills for creating meaningful connections with partners and friends",
+      id: "4",
+      title: "Dating Without the Games: Authentic Connection",
+      host: "Sarah & Tim",
+      duration: "41 min",
       category: "Relationships",
-      listens: "13.1K",
-      featured: false,
-      topics: ["Communication", "Trust", "Intimacy"]
+      rating: 4.7,
+      plays: "6.3K"
+    },
+    {
+      id: "5",
+      title: "Career Pressure and Male Identity",
+      host: "Professional Development Panel",
+      duration: "35 min",
+      category: "Career",
+      rating: 4.6,
+      plays: "4.8K"
+    },
+    {
+      id: "6",
+      title: "Friendship After 25: Making Real Connections",
+      host: "Brotherhood Collective",
+      duration: "47 min",
+      category: "Friendship",
+      rating: 4.8,
+      plays: "9.1K"
+    },
+    {
+      id: "7",
+      title: "Dealing with Family Expectations",
+      host: "Dr. Elena Rodriguez",
+      duration: "39 min",
+      category: "Family",
+      rating: 4.7,
+      plays: "7.2K"
     }
   ];
 
   const categories = [
-    "All Episodes",
-    "Mental Health",
-    "Emotional Intelligence", 
-    "Relationships",
-    "Personal Growth",
-    "Crisis Support"
+    { name: "All", count: 47, active: true },
+    { name: "Mental Health", count: 12, active: false },
+    { name: "Relationships", count: 8, active: false },
+    { name: "Personal Growth", count: 15, active: false },
+    { name: "Career", count: 7, active: false },
+    { name: "Family", count: 5, active: false }
   ];
 
-  const [selectedCategory, setSelectedCategory] = useState("All Episodes");
-
-  const filteredPodcasts = selectedCategory === "All Episodes" 
-    ? podcasts 
-    : podcasts.filter(podcast => podcast.category === selectedCategory);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast({
-        title: "Signed out successfully",
-        description: "Take care, see you soon!",
-      });
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
-  const handlePlayPause = (episodeId: number, title: string) => {
-    if (playingEpisode === episodeId) {
-      setPlayingEpisode(null);
-      toast({
-        title: "Paused",
-        description: `"${title}" has been paused`,
-      });
+  const togglePlay = (podcastId: string) => {
+    if (currentlyPlaying === podcastId) {
+      setCurrentlyPlaying(null);
     } else {
-      setPlayingEpisode(episodeId);
-      toast({
-        title: "Now playing",
-        description: `"${title}" is now playing`,
-      });
+      setCurrentlyPlaying(podcastId);
     }
   };
-
-  const handleDownload = (title: string) => {
-    toast({
-      title: "Download started",
-      description: `"${title}" is being downloaded for offline listening`,
-    });
-  };
-
-  const handleShare = (title: string) => {
-    toast({
-      title: "Link copied!",
-      description: `Share "${title}" with friends`,
-    });
-  };
-
-  if (authLoading) {
-    return <div className="max-w-6xl mx-auto px-6 py-12 text-center">Loading...</div>;
-  }
-
-  if (!user) {
-    return <AuthForm />;
-  }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div></div>
-          <h2 className="text-3xl font-bold text-gray-900">Real Talk Podcasts</h2>
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center text-sm text-gray-600">
-              <User className="w-4 h-4 mr-1" />
-              {profile?.username || 'User'}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSignOut}
-              className="text-gray-600 hover:text-gray-800"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
+    <div className="max-w-6xl mx-auto px-6 py-12 animate-fade-in">
+      {/* Header with navigation */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Real Talk Podcasts</h1>
+          <p className="text-xl text-gray-600">
+            Authentic conversations about the real challenges young men face
+          </p>
         </div>
-        <p className="text-lg text-gray-600">
-          Honest conversations about mental health, emotions, and authentic masculinity
-        </p>
+        <Link to="/" className="hover-scale">
+          <Button variant="outline" className="flex items-center">
+            <Home className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+        </Link>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-8">
-        {/* Sidebar - Categories */}
-        <div className="lg:col-span-1">
-          <Card className="border-blue-200">
-            <CardHeader>
-              <CardTitle>Categories</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                      selectedCategory === category
-                        ? "bg-blue-100 text-blue-700 font-medium"
-                        : "text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+      {/* Stats */}
+      <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <Card className="border-green-100 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6 text-center">
+            <Mic className="w-8 h-8 text-green-500 mx-auto mb-2" />
+            <div className="text-3xl font-bold text-gray-900">47</div>
+            <div className="text-gray-600">Total Episodes</div>
+          </CardContent>
+        </Card>
 
-          <Card className="mt-6 border-green-200">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Heart className="w-5 h-5 mr-2 text-green-500" />
-                Popular This Week
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {podcasts.slice(0, 3).map((podcast, index) => (
-                  <div key={podcast.id} className="text-sm">
-                    <div className="font-medium text-gray-900 mb-1">
-                      {index + 1}. {podcast.title}
-                    </div>
-                    <div className="text-gray-500">{podcast.listens} listens</div>
+        <Card className="border-blue-100 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6 text-center">
+            <Users className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+            <div className="text-3xl font-bold text-gray-900">25K+</div>
+            <div className="text-gray-600">Active Listeners</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-purple-100 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6 text-center">
+            <Star className="w-8 h-8 text-purple-500 mx-auto mb-2" />
+            <div className="text-3xl font-bold text-gray-900">4.8</div>
+            <div className="text-gray-600">Average Rating</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-pink-100 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6 text-center">
+            <TrendingUp className="w-8 h-8 text-pink-500 mx-auto mb-2" />
+            <div className="text-3xl font-bold text-gray-900">Weekly</div>
+            <div className="text-gray-600">New Episodes</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Categories */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Browse by Category</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            {categories.map((category, index) => (
+              <Badge
+                key={index}
+                variant={category.active ? "default" : "outline"}
+                className={`cursor-pointer hover-scale ${
+                  category.active ? "bg-green-600 hover:bg-green-700" : "hover:bg-green-50"
+                }`}
+              >
+                {category.name} ({category.count})
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Featured Podcasts */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Episodes</h2>
+        <div className="grid lg:grid-cols-3 gap-6">
+          {featuredPodcasts.map((podcast) => (
+            <Card key={podcast.id} className="hover:shadow-lg transition-all duration-300 border-green-100">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <Badge className="bg-green-100 text-green-800 mb-2">Featured</Badge>
+                  <div className="flex items-center text-yellow-500">
+                    <Star className="w-4 h-4 mr-1" />
+                    <span className="text-sm font-medium">{podcast.rating}</span>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content */}
-        <div className="lg:col-span-3">
-          {/* Featured Episodes */}
-          {selectedCategory === "All Episodes" && (
-            <div className="mb-8">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Featured Episodes</h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                {podcasts.filter(p => p.featured).map((podcast) => (
-                  <Card key={podcast.id} className="border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start mb-3">
-                        <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">
-                          {podcast.category}
-                        </Badge>
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Clock className="w-4 h-4 mr-1" />
-                          {podcast.duration}
-                        </div>
-                      </div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-2">{podcast.title}</h4>
-                      <p className="text-gray-600 text-sm mb-3">by {podcast.host}</p>
-                      <p className="text-gray-700 mb-4">{podcast.description}</p>
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {podcast.topics.map((topic) => (
-                          <Badge key={topic} variant="outline" className="text-xs">
-                            {topic}
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Button
-                          onClick={() => handlePlayPause(podcast.id, podcast.title)}
-                          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                        >
-                          {playingEpisode === podcast.id ? (
-                            <>
-                              <Pause className="w-4 h-4 mr-2" />
-                              Pause
-                            </>
-                          ) : (
-                            <>
-                              <Play className="w-4 h-4 mr-2" />
-                              Play
-                            </>
-                          )}
-                        </Button>
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownload(podcast.title)}
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleShare(podcast.title)}
-                          >
-                            <Share className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* All Episodes */}
-          <div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              {selectedCategory === "All Episodes" ? "All Episodes" : selectedCategory}
-            </h3>
-            <div className="space-y-4">
-              {filteredPodcasts.map((podcast) => (
-                <Card key={podcast.id} className="border-gray-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h4 className="text-lg font-semibold text-gray-900">{podcast.title}</h4>
-                          <Badge variant="outline">{podcast.category}</Badge>
-                        </div>
-                        <p className="text-gray-600 text-sm mb-2">by {podcast.host}</p>
-                        <p className="text-gray-700 mb-3">{podcast.description}</p>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
-                          <div className="flex items-center">
-                            <Clock className="w-4 h-4 mr-1" />
-                            {podcast.duration}
-                          </div>
-                          <div>{podcast.listens} listens</div>
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {podcast.topics.map((topic) => (
-                            <Badge key={topic} variant="outline" className="text-xs">
-                              {topic}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex flex-col space-y-2 ml-4">
-                        <Button
-                          onClick={() => handlePlayPause(podcast.id, podcast.title)}
-                          className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-                        >
-                          {playingEpisode === podcast.id ? (
-                            <>
-                              <Pause className="w-4 h-4 mr-2" />
-                              Pause
-                            </>
-                          ) : (
-                            <>
-                              <Play className="w-4 h-4 mr-2" />
-                              Play
-                            </>
-                          )}
-                        </Button>
-                        <div className="flex space-x-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownload(podcast.title)}
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleShare(podcast.title)}
-                          >
-                            <Share className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+                </div>
+                <CardTitle className="text-lg leading-tight">{podcast.title}</CardTitle>
+                <CardDescription>by {podcast.host}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">{podcast.description}</p>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center text-gray-500">
+                    <Clock className="w-4 h-4 mr-1" />
+                    <span className="text-sm">{podcast.duration}</span>
+                  </div>
+                  <div className="flex items-center text-gray-500">
+                    <Play className="w-4 h-4 mr-1" />
+                    <span className="text-sm">{podcast.plays} plays</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline">{podcast.category}</Badge>
+                  <Button
+                    onClick={() => togglePlay(podcast.id)}
+                    className="bg-green-600 hover:bg-green-700 hover-scale"
+                  >
+                    {currentlyPlaying === podcast.id ? (
+                      <Pause className="w-4 h-4 mr-2" />
+                    ) : (
+                      <Play className="w-4 h-4 mr-2" />
+                    )}
+                    {currentlyPlaying === podcast.id ? "Pause" : "Play"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
+
+      {/* Recent Episodes */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Clock className="w-6 h-6 mr-2 text-blue-600" />
+            Recent Episodes
+          </CardTitle>
+          <CardDescription>
+            Latest conversations from our community
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {recentEpisodes.map((episode) => (
+              <div
+                key={episode.id}
+                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 mb-1">{episode.title}</h3>
+                  <p className="text-gray-600 text-sm mb-2">by {episode.host}</p>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center text-gray-500">
+                      <Clock className="w-4 h-4 mr-1" />
+                      <span className="text-sm">{episode.duration}</span>
+                    </div>
+                    <div className="flex items-center text-gray-500">
+                      <Play className="w-4 h-4 mr-1" />
+                      <span className="text-sm">{episode.plays} plays</span>
+                    </div>
+                    <div className="flex items-center text-yellow-500">
+                      <Star className="w-4 h-4 mr-1" />
+                      <span className="text-sm">{episode.rating}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Badge variant="outline">{episode.category}</Badge>
+                  <Button
+                    onClick={() => togglePlay(episode.id)}
+                    variant="outline"
+                    size="sm"
+                    className="hover-scale"
+                  >
+                    {currentlyPlaying === episode.id ? (
+                      <Pause className="w-4 h-4" />
+                    ) : (
+                      <Play className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Call to Action */}
+      <Card className="mt-8 border-green-100 bg-gradient-to-r from-green-50 to-blue-50">
+        <CardContent className="p-6 text-center">
+          <Heart className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold mb-2">Want to share your story?</h3>
+          <p className="text-gray-600 mb-4">
+            We're always looking for authentic voices to join our podcast community
+          </p>
+          <Link to="/contact-us">
+            <Button className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 hover-scale">
+              Get in Touch
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
     </div>
   );
 };

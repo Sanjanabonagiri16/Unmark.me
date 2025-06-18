@@ -35,6 +35,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id)
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
@@ -65,21 +66,47 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log('Fetching profile for user:', userId)
+      
+      // Add a small delay to ensure the trigger has completed
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .single()
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching user profile:', error)
+        
+        // If profile doesn't exist, try to create it
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, attempting to create...')
+          const { data: newProfile, error: createError } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: userId,
+              mood_streak: 0,
+              joined_circles: [],
+              last_active: new Date().toISOString()
+            })
+            .select()
+            .single()
+          
+          if (createError) {
+            console.error('Error creating profile:', createError)
+          } else {
+            console.log('Profile created successfully:', newProfile)
+            setProfile(newProfile)
+          }
+        }
         return
       }
 
       console.log('User profile fetched:', data)
       setProfile(data)
     } catch (error) {
-      console.error('Error fetching user profile:', error)
+      console.error('Error in fetchUserProfile:', error)
     }
   }
 
@@ -117,16 +144,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('Signup successful:', data)
 
-      // Wait a moment for the trigger to create the profile
-      if (data.user) {
-        console.log('User created:', data.user.id)
-        
-        // If user is confirmed immediately, ensure profile exists
-        if (data.user.email_confirmed_at) {
-          console.log('User confirmed immediately, ensuring profile exists')
-          await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
-          await fetchUserProfile(data.user.id)
-        }
+      // For confirmed users, ensure profile exists
+      if (data.user && data.user.email_confirmed_at) {
+        console.log('User confirmed immediately, ensuring profile exists')
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        await fetchUserProfile(data.user.id)
       }
     } catch (error) {
       console.error('Error in signup process:', error)
@@ -142,6 +164,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error
     }
     console.log('Sign out successful')
+    setProfile(null)
   }
 
   const updateMoodStreak = async () => {
