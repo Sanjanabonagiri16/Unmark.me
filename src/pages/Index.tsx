@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,26 @@ import Footer from "@/components/Footer";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<string>("home");
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Handle URL parameters for section navigation
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const section = urlParams.get('section');
+    if (section) {
+      setActiveSection(section);
+    }
+  }, [location]);
+
+  const handleSectionChange = (section: string) => {
+    setActiveSection(section);
+    if (section === "home") {
+      navigate("/");
+    } else {
+      navigate(`/?section=${section}`);
+    }
+  };
 
   const renderActiveSection = () => {
     switch (activeSection) {
@@ -47,7 +68,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div 
               className="flex items-center space-x-2 cursor-pointer"
-              onClick={() => setActiveSection("home")}
+              onClick={() => handleSectionChange("home")}
             >
               <div className="w-8 h-8 bg-gradient-to-br from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">U</span>
@@ -56,43 +77,43 @@ const Index = () => {
             </div>
             <div className="flex space-x-4 overflow-x-auto">
               <button 
-                onClick={() => setActiveSection("checkin")}
+                onClick={() => handleSectionChange("checkin")}
                 className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "checkin" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
               >
                 Check-In
               </button>
               <button 
-                onClick={() => setActiveSection("tracker")}
+                onClick={() => handleSectionChange("tracker")}
                 className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "tracker" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
               >
                 Mood Tracker
               </button>
               <button 
-                onClick={() => setActiveSection("podcasts")}
+                onClick={() => handleSectionChange("podcasts")}
                 className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "podcasts" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
               >
                 Podcasts
               </button>
               <button 
-                onClick={() => setActiveSection("brocademy")}
+                onClick={() => handleSectionChange("brocademy")}
                 className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "brocademy" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
               >
                 BroCademy
               </button>
               <button 
-                onClick={() => setActiveSection("circles")}
+                onClick={() => handleSectionChange("circles")}
                 className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "circles" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
               >
                 Circles
               </button>
               <button 
-                onClick={() => setActiveSection("challenges")}
+                onClick={() => handleSectionChange("challenges")}
                 className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "challenges" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
               >
                 Challenges
               </button>
               <button 
-                onClick={() => setActiveSection("resources")}
+                onClick={() => handleSectionChange("resources")}
                 className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${activeSection === "resources" ? "bg-green-100 text-green-700" : "text-gray-600 hover:text-green-600"}`}
               >
                 Resources

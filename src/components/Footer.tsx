@@ -1,5 +1,6 @@
 
 import { Heart, Mail, MessageCircle, Shield } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -28,12 +29,12 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-200">Platform</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-green-400 transition-colors">Emotional Check-in</a></li>
-              <li><a href="#" className="hover:text-green-400 transition-colors">Mood Tracker</a></li>
-              <li><a href="#" className="hover:text-green-400 transition-colors">Real Talk Podcasts</a></li>
-              <li><a href="#" className="hover:text-green-400 transition-colors">BroCademy</a></li>
-              <li><a href="#" className="hover:text-green-400 transition-colors">Community Circles</a></li>
-              <li><a href="#" className="hover:text-green-400 transition-colors">Growth Challenges</a></li>
+              <li><Link to="/?section=checkin" className="hover:text-green-400 transition-colors">Emotional Check-in</Link></li>
+              <li><Link to="/?section=tracker" className="hover:text-green-400 transition-colors">Mood Tracker</Link></li>
+              <li><Link to="/?section=podcasts" className="hover:text-green-400 transition-colors">Real Talk Podcasts</Link></li>
+              <li><Link to="/?section=brocademy" className="hover:text-green-400 transition-colors">BroCademy</Link></li>
+              <li><Link to="/?section=circles" className="hover:text-green-400 transition-colors">Community Circles</Link></li>
+              <li><Link to="/?section=challenges" className="hover:text-green-400 transition-colors">Growth Challenges</Link></li>
             </ul>
           </div>
 
@@ -41,11 +42,11 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-200">Support</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-green-400 transition-colors">Mental Health Resources</a></li>
-              <li><a href="#" className="hover:text-green-400 transition-colors">Crisis Support</a></li>
-              <li><a href="#" className="hover:text-green-400 transition-colors">Community Guidelines</a></li>
-              <li><a href="#" className="hover:text-green-400 transition-colors">Help Center</a></li>
-              <li><a href="#" className="hover:text-green-400 transition-colors">Contact Us</a></li>
+              <li><Link to="/mental-health-resources" className="hover:text-green-400 transition-colors">Mental Health Resources</Link></li>
+              <li><Link to="/crisis-support" className="hover:text-green-400 transition-colors">Crisis Support</Link></li>
+              <li><Link to="/community-guidelines" className="hover:text-green-400 transition-colors">Community Guidelines</Link></li>
+              <li><Link to="/help-center" className="hover:text-green-400 transition-colors">Help Center</Link></li>
+              <li><Link to="/contact-us" className="hover:text-green-400 transition-colors">Contact Us</Link></li>
             </ul>
           </div>
 
@@ -81,9 +82,9 @@ const Footer = () => {
               © 2024 Unmark.me. All rights reserved.
             </div>
             <div className="flex space-x-6 text-sm text-gray-400">
-              <a href="#" className="hover:text-green-400 transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-green-400 transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-green-400 transition-colors">Cookie Policy</a>
+              <Link to="/privacy-policy" className="hover:text-green-400 transition-colors">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="hover:text-green-400 transition-colors">Terms of Service</Link>
+              <Link to="/cookie-policy" className="hover:text-green-400 transition-colors">Cookie Policy</Link>
             </div>
           </div>
         </div>
