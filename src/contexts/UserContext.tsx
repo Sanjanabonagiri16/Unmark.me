@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
@@ -91,25 +90,36 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          username: username || email.split('@')[0]
+        }
+      }
     })
     if (error) throw error
 
-    // Create user profile
-    if (data.user) {
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert([
-          {
-            id: data.user.id,
-            username: username || email.split('@')[0],
-            mood_streak: 0,
-            joined_circles: [],
-            last_active: new Date().toISOString(),
-          },
-        ])
-      
-      if (profileError) {
-        console.error('Error creating profile:', profileError)
+    // If user is created and confirmed immediately, create profile manually
+    if (data.user && data.user.email_confirmed_at) {
+      try {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .upsert([
+            {
+              id: data.user.id,
+              username: username || email.split('@')[0],
+              mood_streak: 0,
+              joined_circles: [],
+              last_active: new Date().toISOString(),
+            },
+          ])
+        
+        if (profileError) {
+          console.error('Error creating profile:', profileError)
+          // Don't throw error, as user creation was successful
+        }
+      } catch (profileError) {
+        console.error('Error in profile creation:', profileError)
+        // Don't throw error, as user creation was successful
       }
     }
   }
