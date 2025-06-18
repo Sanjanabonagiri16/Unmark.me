@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
@@ -46,6 +47,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session?.user?.id)
       setSession(session)
       setUser(session?.user ?? null)
       
@@ -62,6 +64,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId)
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -69,9 +72,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single()
 
       if (error && error.code !== 'PGRST116') {
-        throw error
+        console.error('Error fetching user profile:', error)
+        return
       }
 
+      console.log('User profile fetched:', data)
       setProfile(data)
     } catch (error) {
       console.error('Error fetching user profile:', error)
@@ -79,59 +84,73 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signIn = async (email: string, password: string) => {
+    console.log('Attempting sign in for:', email)
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
-    if (error) throw error
+    if (error) {
+      console.error('Sign in error:', error)
+      throw error
+    }
+    console.log('Sign in successful')
   }
 
   const signUp = async (email: string, password: string, username?: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          username: username || email.split('@')[0]
+    console.log('Attempting sign up for:', email, 'with username:', username)
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: username || email.split('@')[0]
+          }
         }
+      })
+      
+      if (error) {
+        console.error('Signup error:', error)
+        throw error
       }
-    })
-    if (error) throw error
 
-    // If user is created and confirmed immediately, create profile manually
-    if (data.user && data.user.email_confirmed_at) {
-      try {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .upsert([
-            {
-              id: data.user.id,
-              username: username || email.split('@')[0],
-              mood_streak: 0,
-              joined_circles: [],
-              last_active: new Date().toISOString(),
-            },
-          ])
+      console.log('Signup successful:', data)
+
+      // Wait a moment for the trigger to create the profile
+      if (data.user) {
+        console.log('User created:', data.user.id)
         
-        if (profileError) {
-          console.error('Error creating profile:', profileError)
-          // Don't throw error, as user creation was successful
+        // If user is confirmed immediately, ensure profile exists
+        if (data.user.email_confirmed_at) {
+          console.log('User confirmed immediately, ensuring profile exists')
+          await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
+          await fetchUserProfile(data.user.id)
         }
-      } catch (profileError) {
-        console.error('Error in profile creation:', profileError)
-        // Don't throw error, as user creation was successful
       }
+    } catch (error) {
+      console.error('Error in signup process:', error)
+      throw error
     }
   }
 
   const signOut = async () => {
+    console.log('Signing out')
     const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    if (error) {
+      console.error('Sign out error:', error)
+      throw error
+    }
+    console.log('Sign out successful')
   }
 
   const updateMoodStreak = async () => {
-    if (!user || !profile) return
+    if (!user || !profile) {
+      console.log('No user or profile for mood streak update')
+      return
+    }
 
+    console.log('Updating mood streak for user:', user.id)
     const { error } = await supabase
       .from('user_profiles')
       .update({
@@ -142,6 +161,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (!error) {
       setProfile(prev => prev ? { ...prev, mood_streak: prev.mood_streak + 1 } : null)
+      console.log('Mood streak updated successfully')
+    } else {
+      console.error('Error updating mood streak:', error)
     }
   }
 
